@@ -19,7 +19,7 @@
 #include <tchar.h>
 
 #define CMD_TXT		_T( "C:\\Program Files\\WZ Editor\\wzeditor.exe" )
-#define CMD_TXT32	_T( "C:\\Program Files\\WZ Editor (x86)\\wzeditor.exe" )
+#define CMD_TXT32	_T( "C:\\Program Files (x86)\\WZ Editor\\wzeditor.exe" )
 
 #define strchr		_tcsrchr
 #define strcpy_s	_tcscpy_s
