@@ -45,25 +45,11 @@ int WINAPI _tWinMain(
 	LPTSTR		lpCmdStr,
 	int			iCmdShow ){
 	
-	TCHAR	szFileName[ MAX_PATH ];
-	TCHAR	*p;
-	
-	if(
-		*lpCmdStr != _T( '\0' ) &&
-		( p = strchr( lpCmdStr, _T( '"' ))) == NULL
-	){
-		/* file name is not quated. */
-		sprintf_s( szFileName, MAX_PATH, _T( "\"%s\"" ), lpCmdStr );
-		p = szFileName;
-	}else{
-		p = lpCmdStr;
-	}
-	
 	/* open the text file */
 	ShellExecute(
 		NULL, _T( "open" ),
 		FileExist( CMD_TXT32 ) ? CMD_TXT32 : CMD_TXT,
-		p, NULL, iCmdShow
+		lpCmdStr, NULL, iCmdShow
 	);
 	
 	return( 0 );
