@@ -33,10 +33,8 @@ int FileExist( LPTSTR szFileName ){
 }
 
 const TCHAR *g_szEditor[] = {
-	_T( "C:\\Program Files\\xyzzy\\xyzzycli.exe" ),
-	_T( "C:\\Program Files\\xyzzy\\xyzzy.exe" ),
-	_T( "C:\\Program Files (x86)\\xyzzy\\xyzzycli.exe" ),
-	_T( "C:\\Program Files (x86)\\xyzzy\\xyzzy.exe" ),
+	_T( "C:\\Program Files\\wz editor\\wzeditor.exe" ),
+	_T( "C:\\Program Files (x86)\\wz editor\\wzeditor.exe" ),
 };
 
 int WINAPI _tWinMain(
@@ -73,8 +71,7 @@ int WINAPI _tWinMain(
 	}
 	
 	/* open the text file */
-	int iCmd = FileExist( g_szEditor[ 0 ]) ? 0 : 2;
-	if( GetKeyState( VK_SHIFT ) & 0x80000000 ) iCmd += 1;
+	int iCmd = FileExist( g_szEditor[ 0 ]) ? 0 : 1;
 	
 	ShellExecute(
 		NULL, _T( "open" ),
