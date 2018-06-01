@@ -32,9 +32,8 @@ int FileExist( LPTSTR szFileName ){
 	return 0;
 }
 
-const TCHAR *g_szEditor[] = {
-	_T( "C:\\Program Files\\wz editor\\wzeditor.exe" ),
-	_T( "C:\\Program Files (x86)\\wz editor\\wzeditor.exe" ),
+const TCHAR g_szEditor[][ 256 ] = {
+	_T( "C:\\Program Files\\WZ EDITOR 9\\wzeditor.exe" ),
 };
 
 int WINAPI _tWinMain(
