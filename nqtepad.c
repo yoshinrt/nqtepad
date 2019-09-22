@@ -33,7 +33,8 @@ int FileExist( LPTSTR szFileName ){
 }
 
 const TCHAR g_szEditor[][ 256 ] = {
-	_T( "C:\\Program Files\\WZ EDITOR 9\\wzeditor.exe" ),
+	_T( "D:\\Program Files\\sakura\\sakura.exe" ),
+	_T( "C:\\Program Files\\sakura\\sakura.exe" ),
 };
 
 int WINAPI _tWinMain(
