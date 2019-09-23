@@ -6,75 +6,78 @@
 
 #include <windows.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <tchar.h>
+#include <string>
+#include <vector>
+#include <regex>
+#include <unordered_map>
 #include "Shlwapi.h"
+#include "dds.h"
 
-#define strchr		_tcschr
-#define strrchr		_tcsrchr
-#define strcpy		_tcscpy
-#define strcpy_s	_tcscpy_s
-#define strncpy_s	_tcsncpy_s
-#define strcat_s	_tcscat_s
-#define strlen		_tcslen
-#define sprintf_s	_stprintf_s
-#define fopen		_tfopen
+/*** 正規表現を使用する場所で std::wregex するためのヘルパ関数 *******************/
+// 書きやすさ最優先で，実行効率は求めない．
 
-/****************************************************************************/
+std::unordered_map<std::wstring, std::wregex *> RegTbl;
 
-const TCHAR g_szEditor[][ 256 ] = {
-	_T( "C:\\Program Files\\sakura\\sakura.exe" ),
-	_T( "D:\\Program Files\\sakura\\sakura.exe" ),
-	_T( "C:\\Program Files (x86)\\sakura\\sakura.exe" ),
-	_T( "" ),
-	_T( "" ),
-	_T( "\0Last Last Last Last Last Last" ),
-};
-
-int WINAPI _tWinMain(
-	HINSTANCE	hInst,
-	HINSTANCE	hPrevInst,
-	LPTSTR		lpCmdStr,
-	int			iCmdShow
-){
+std::wregex &regex_helper( const std::wstring& strRe, const char *file, const int line ){
+	std::wregex **regex = &RegTbl[ strRe ];
 	
-	TCHAR	szFileName[ MAX_PATH ];
-	TCHAR	*pSt, *pEd;
-	TCHAR	*szParam = lpCmdStr;
-	
-	// lpCmtStr が空文字でなく，"～" で囲まれていない場合，囲む
-	if( lpCmdStr && strchr( lpCmdStr, _T( '"' )) == NULL ){
-		
-		// 先頭の空白以外文字をサーチ
-		for( pSt = lpCmdStr; *pSt && *pSt < _T( ' ' ); ++ pSt );
-		
-		// 後端の空白以外文字をサーチ
-		for(
-			pEd = lpCmdStr + strlen( lpCmdStr ) - 1;
-			pEd >= lpCmdStr && *pEd < _T( ' ' );
-			--pEd
-		);
-		++pEd;
-		
-		if( pSt < pEd ){
-			szFileName[ 0 ] = _T( '"' );
-			strncpy_s( szFileName + 1, MAX_PATH - 1, pSt, pEd - pSt );
-			strcpy( szFileName + ( pEd - pSt ) + 1, _T( "\"" ));
-			
-			szParam = szFileName;
+	if( *regex == NULL ){
+		try {
+			*regex = new std::wregex( strRe, std::regex_constants::icase );
+		}catch( std::regex_error& e ){
+			DebugMsgD( L"%s(%d): %s\n", file, line, e.what());
+			exit( 1 );
 		}
 	}
 	
-	/* open the text file */
-	int iCmd;
-	for( iCmd = 0; g_szEditor[ iCmd ][ 0 ]; ++iCmd ){
-		if( PathFileExists( g_szEditor[ iCmd ])) break;
+	return **regex;
+}
+
+#define re( reg ) regex_helper( std::wstring( L##reg ), __FILE__, __LINE__ )
+
+/****************************************************************************/
+
+int WINAPI wWinMain(
+	HINSTANCE	hInst,
+	HINSTANCE	hPrevInst,
+	LPWSTR		lpCmdStr,
+	int			iCmdShow
+){
+	static const WCHAR szEditor[][ 256 ] = {
+		L"C:\\Program Files\\sakura\\sakura.exe",
+		L"D:\\Program Files\\sakura\\sakura.exe",
+		L"C:\\Program Files (x86)\\sakura\\sakura.exe",
+		L"",
+		L"",
+		L"\0Last Last Last Last Last Last",
+	};
+	
+	std::wstring strEditorArg( lpCmdStr );
+	
+	DebugMsgD( L"lpCmdStr: >>>%s<<<\n", lpCmdStr );
+	
+	// notepad.exe が含まれる場合，そこまでを無視 && 以後のパラメータはスペースありでも 1つのファイルとみなす
+	if( std::regex_search( lpCmdStr, re( "\\bNotepad\\.exe\\b" ))){
+		strEditorArg = std::regex_replace( lpCmdStr, re( ".*\\bnotepad\\.exe\"? *(.*)" ), L"$1" );
 	}
 	
+	// strEdirotArg に " が含まれない場合，" でくくる
+	if( wcschr( strEditorArg.c_str(), L'"' ) == nullptr ){
+		strEditorArg = std::regex_replace( strEditorArg, re( "^\\s*(.*?)\\s*$" ), L"\"$1\"" );
+	}
+	
+	// エディタを探す
+	int iCmd;
+	for( iCmd = 0; szEditor[ iCmd ][ 0 ]; ++iCmd ){
+		if( PathFileExists( szEditor[ iCmd ])) break;
+	}
+	
+	DebugMsgD( L"exec: [%s] [%s]\n", szEditor[ iCmd ], strEditorArg.c_str());
+	
 	ShellExecute(
-		NULL, _T( "open" ),
-		g_szEditor[ iCmd ],
-		szParam, NULL, iCmdShow
+		NULL, L"open",
+		szEditor[ iCmd ],
+		strEditorArg.c_str(), nullptr, iCmdShow
 	);
 	
 	return( 0 );
