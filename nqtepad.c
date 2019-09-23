@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <tchar.h>
+#include "Shlwapi.h"
 
 #define strchr		_tcschr
 #define strrchr		_tcsrchr
@@ -21,27 +22,21 @@
 
 /****************************************************************************/
 
-int FileExist( LPTSTR szFileName ){
-	FILE *fp = fopen( szFileName, _T( "r" ));
-	
-	if( fp ){
-		fclose( fp );
-		return 1;
-	}
-	
-	return 0;
-}
-
 const TCHAR g_szEditor[][ 256 ] = {
-	_T( "D:\\Program Files\\sakura\\sakura.exe" ),
 	_T( "C:\\Program Files\\sakura\\sakura.exe" ),
+	_T( "D:\\Program Files\\sakura\\sakura.exe" ),
+	_T( "C:\\Program Files (x86)\\sakura\\sakura.exe" ),
+	_T( "" ),
+	_T( "" ),
+	_T( "\0Last Last Last Last Last Last" ),
 };
 
 int WINAPI _tWinMain(
 	HINSTANCE	hInst,
 	HINSTANCE	hPrevInst,
 	LPTSTR		lpCmdStr,
-	int			iCmdShow ){
+	int			iCmdShow
+){
 	
 	TCHAR	szFileName[ MAX_PATH ];
 	TCHAR	*pSt, *pEd;
@@ -71,7 +66,10 @@ int WINAPI _tWinMain(
 	}
 	
 	/* open the text file */
-	int iCmd = FileExist( g_szEditor[ 0 ]) ? 0 : 1;
+	int iCmd;
+	for( iCmd = 0; g_szEditor[ iCmd ][ 0 ]; ++iCmd ){
+		if( PathFileExists( g_szEditor[ iCmd ])) break;
+	}
 	
 	ShellExecute(
 		NULL, _T( "open" ),
